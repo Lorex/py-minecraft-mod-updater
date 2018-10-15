@@ -14,6 +14,7 @@ import time
 import psutil
 import shutil
 import git
+import platform
 from git import RemoteProgress
 from git import Repo
 
@@ -60,7 +61,7 @@ def main():
     |           v1.0.181015           |
     ===================================
     ''')
-
+    
     # 設定 Minecraft root path
     MINECRAFT_PATH = os.getenv('APPDATA') + '\\.minecraft'
 
@@ -90,11 +91,42 @@ def main():
     logger.info('最新模組包版本：' + INFO['MODPACK_VERSION'])
     logger.info('')
 
+    # =====================
+    # 進行 Git 檢查
+    # =====================
+
+    # 檢查 git 是否可用
+    if not os.path.isfile(os.environ['GIT_PYTHON_GIT_EXECUTABLE']):
+        logger.warning('找不到相依性套件，可能為第一次運行本更新程式')
+        logger.warning('正在初始化更新程式...')
+        if platform.architecture()[0] == '64bit':
+            logger.info('偵測到系統作業環境為 64 位元，正在下載對應套件...')
+            urllib.request.urlretrieve(
+                INFO['GIT64_URL'], 'gitdl.exe', reporthook)
+        else:
+            logger.info('偵測到系統作業環境為 32 位元，正在下載對應套件...')
+            urllib.request.urlretrieve(
+                INFO['GIT32_URL'], 'gitdl.exe', reporthook)
+        logger.info('')
+        logger.success('下載完畢！')
+        logger.info('正在設定套件...')
+        os.system('.\\gitdl.exe -y')
+        os.rename('PortableGit', 'git')
+        os.remove('.\\gitdl.exe')
+        logger.success('更新程式已完成初始化！')
+
+
+    # =====================
+    # 進行遊戲套件檢查
+    # =====================
+    logger.info('')
     # 檢查 Minecraft 是否已安裝，沒有的話直接死給你看
-    logging.info('偵測安裝中...')
+    logger.info('偵測 Minecraft 中...')
     if not os.path.isdir(MINECRAFT_PATH):
         logger.fatal('錯誤：找不到 Minecraft 安裝路徑，你可能沒安裝 Minecraft？')
         os._exit(1)
+    else:
+        logger.success('Minecraft 已找到！')
 
     # 檢查有沒有安裝 Java，沒有的話直接死給你看
     logger.info('檢查 Java 版本中...')
@@ -141,7 +173,7 @@ def main():
     # inner def function: init_mods()
     def init_mods():
         git.Repo.clone_from(
-            url=INFO['GIT_URL'],
+            url=INFO['REPO_URL'],
             to_path=MINECRAFT_PATH + '\\mods',
             progress=gitProgressHook()
         )
@@ -172,12 +204,6 @@ def main():
         os.system('pause')
         os._exit(0)
 
-    # 檢查 git 是否可用
-        if not os.path.isfile(os.environ['GIT_PYTHON_GIT_EXECUTABLE']):
-            logger.fatal('錯誤：找不到相依性套件，自動更新程式可能已毀損，請重新至以下連結下載自動更新程式：')
-            logger.fatal(INFO['UPDATOR_LINK'])
-            os._exit(1)
-
     # 檢查 Git 是否已經 init 好
     logger.info('')
     logger.info('檢查模組資料夾狀態...')
@@ -201,7 +227,7 @@ def main():
         logger.error('錯誤：本機版本描述檔已毀損，進行檔案復原中...')
         repo.index.checkout(force=True)
         logger.success('檔案復原完成！')
-        
+
     with open(MINECRAFT_PATH + '\\mods\\version.yml', 'r', encoding='utf-8') as f:
         doc = yaml.load(f)
     CURRENT = doc
