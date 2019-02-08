@@ -70,9 +70,10 @@ def main():
 
     # 檢查是否能對外連線
     logger.info('初始化連線中...')
-    ping = os.system("ping -c 1 gitlab.sita.tech > nul 2>nul")
+    ping = os.system("ping gitlab.sita.tech > nul 2>nul")
     if not ping == 0:
         logging.fatal('錯誤：無法連線到更新伺服器！')
+        os.system("pause")
         os._exit(1)
     logger.success('已成功連線到更新伺服器！')
 
@@ -123,6 +124,7 @@ def main():
     logger.info('偵測 Minecraft 中...')
     if not os.path.isdir(MINECRAFT_PATH):
         logger.fatal('錯誤：找不到 Minecraft 安裝路徑，你可能沒安裝 Minecraft？')
+        os.system("pause")
         os._exit(1)
     else:
         logger.success('Minecraft 已找到！')
@@ -134,6 +136,7 @@ def main():
 
     if which('java') is None:
         logger.fatal('錯誤：找不到 Java，哥你在跟我開玩笑吧？')
+        os.system("pause")
         os._exit(1)
     else:
         sp = (subprocess.check_output(
