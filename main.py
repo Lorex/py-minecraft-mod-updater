@@ -24,8 +24,7 @@ VERSION_URL = "http://gitlab.sita.tech/api/v4/projects/23/repository/files/?file
 
 # 全域變數
 logger = logging.getLogger(__name__)
-# 設定 git 路徑
-os.environ['GIT_PYTHON_GIT_EXECUTABLE'] = os.getcwd() + '\\git\\bin\\git.exe'
+
 
 
 def reporthook(count, block_size, total_size):
@@ -265,6 +264,7 @@ if __name__ == "__main__":
 
     # 設定視窗顏色
     os.system('color 0f')
+    os.system('SET GIT_PYTHON_GIT_EXECUTABLE=' + os.getcwd() + '\\git\\bin\\git.exe')
 
     # 新增 Logger 種類
     logging.SUCCESS = 25  # between WARNING and INFO
